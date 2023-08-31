@@ -16,6 +16,26 @@ function convertPokeApiDetailToPokemon(pokeDetail) {
 
     return pokemon
 }
+function convertDataToModal(pokeData) {
+    const pokemon = new PokemonStatus()
+
+    const types = pokeData.types.map((typeSlot) => typeSlot.type.name)
+    const [type] = types
+    pokemon.id = pokeData.id;
+    pokemon.name = pokeData.name;
+    pokemon.weight = pokeData.weight;
+    pokemon.height = pokeData.height;
+    pokemon.defense = pokeData.stats[2].base_stat;
+    pokemon.speed = pokeData.stats[5].base_stat;
+    pokemon.abilities = pokeData.abilities[0];
+    pokemon.description = pokeData.description;
+    pokemon.type = type;
+    pokemon.image = pokeData.sprites.other.dream_world.front_default;
+    pokemon.attack = pokeData.stats[1].base_stat;
+    
+    return pokemon
+}
+
 
 pokeApi.getPokemonDetail = (pokemon) => {
     return fetch(pokemon.url)
@@ -32,4 +52,17 @@ pokeApi.getPokemons = (offset = 0, limit = 5) => {
         .then((pokemons) => pokemons.map(pokeApi.getPokemonDetail))
         .then((detailRequests) => Promise.all(detailRequests))
         .then((pokemonsDetails) => pokemonsDetails)
+}
+
+pokeApi.getSinglePokemon = (pokemonId) => {
+    const url = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`
+    return fetch(url)
+        .then((response) => response.json())
+        .then((jsonBody) => convertDataToModal(jsonBody))
+        .then(res => res)
+}
+
+pokeApi.getDescription = async (order) => {
+    const url = `https://pokeapi.co/api/v2/pokemon-species/${order}/`
+    return await fetch(url).then(res => res.json()).then(data => data.flavor_text_entries[1].flavor_text)
 }
